@@ -36,13 +36,10 @@ def test_loadClubs():
     assert clubs[0]["name"] == "Simply Lift"
 
 
-def test_purchasePlaces():
+def test_purchasePlaces(mocker):
     places = 10
     competitions = loadCompetitions()
-    print(competitions)
-    original_places = competitions[0]["numberOfPlaces"]
     clubs = loadClubs()
-    original_points = clubs[0]["points"]
     response = app.test_client().post(
         "/purchasePlaces",
         data=dict(
@@ -50,5 +47,6 @@ def test_purchasePlaces():
         ),
     )
     assert response.status_code == 200
-    assert int(competitions[0]["numberOfPlaces"]) == int(original_places) - places
+    assert b"Points available: 3" in response.data
+    assert b"Number of Places: 15" in response.data
     assert b"Great-booking complete!" in response.data
