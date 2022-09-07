@@ -50,19 +50,25 @@ def book(competition, club):
 @app.route("/purchasePlaces", methods=["POST"])
 def purchasePlaces():
     date_now = datetime.now()
-    now = date_now.strftime("%d-%m-%Y")
+    now = date_now.strftime("%Y-%m-%d %H:%M:%S")
     competition = [c for c in competitions if c["name"] == request.form["competition"]][
         0
     ]
     date_competition = competition["date"]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
-    if date_competition < now:
+    if date_competition > now:
         placesRequired = int(request.form["places"])
-        competition["numberOfPlaces"] = (
-            int(competition["numberOfPlaces"]) - placesRequired
-        )
-        club["points"] = int(club["points"]) - placesRequired
-        flash("Great-booking complete!")
+        clubPoints = club["points"]
+        if placesRequired < 13 and placesRequired <= int(clubPoints):
+            competition["numberOfPlaces"] = (
+                int(competition["numberOfPlaces"]) - placesRequired
+            )
+            club["points"] = int(club["points"]) - placesRequired
+            flash("Great-booking complete!")
+        elif placesRequired > 12:
+            flash("You can't book more than 12 points !")
+        elif placesRequired > int(clubPoints):
+            flash("You can't book more places than your points count")
     else:
         placesRequired = int(request.form["places"])
         flash("You can't book places for a competition in the past.")

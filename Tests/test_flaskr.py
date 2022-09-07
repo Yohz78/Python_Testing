@@ -4,6 +4,8 @@ import tempfile
 import pytest
 
 from server import app, loadCompetitions, purchasePlaces, loadClubs
+from datetime import datetime
+import time
 
 
 def test_index_route():
@@ -36,14 +38,14 @@ def test_loadClubs():
     assert clubs[0]["name"] == "Simply Lift"
 
 
-def test_purchasePlaces(mocker):
+def test_purchasePlaces():
     places = 10
     competitions = loadCompetitions()
     clubs = loadClubs()
     response = app.test_client().post(
         "/purchasePlaces",
         data=dict(
-            places=places, club=clubs[0]["name"], competition=competitions[0]["name"]
+            places=places, club=clubs[1]["name"], competition=competitions[2]["name"]
         ),
     )
     assert response.status_code == 200
