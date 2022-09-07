@@ -1,5 +1,7 @@
 import json
 from flask import Flask, render_template, request, redirect, flash, url_for
+from datetime import datetime
+import time
 
 
 def loadClubs():
@@ -47,14 +49,23 @@ def book(competition, club):
 
 @app.route("/purchasePlaces", methods=["POST"])
 def purchasePlaces():
+    date_now = datetime.now()
+    now = date_now.strftime("%d-%m-%Y")
     competition = [c for c in competitions if c["name"] == request.form["competition"]][
         0
     ]
+    date_competition = competition["date"]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
-    placesRequired = int(request.form["places"])
-    competition["numberOfPlaces"] = int(competition["numberOfPlaces"]) - placesRequired
-    club["points"] = int(club["points"]) - placesRequired
-    flash("Great-booking complete!")
+    if date_competition < now:
+        placesRequired = int(request.form["places"])
+        competition["numberOfPlaces"] = (
+            int(competition["numberOfPlaces"]) - placesRequired
+        )
+        club["points"] = int(club["points"]) - placesRequired
+        flash("Great-booking complete!")
+    else:
+        placesRequired = int(request.form["places"])
+        flash("You can't book places for a competition in the past.")
     return render_template("welcome.html", club=club, competitions=competitions)
 
 
