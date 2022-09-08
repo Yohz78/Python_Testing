@@ -1,7 +1,7 @@
 import json
 from flask import Flask, render_template, request, redirect, flash, url_for
 from datetime import datetime
-import time
+from math import floor
 
 
 def loadClubs():
@@ -67,18 +67,18 @@ def purchasePlaces():
         # Check that a number has been entered for places.
         if request.form["places"]:
             placesRequired = int(request.form["places"])
-            clubPoints = club["points"]
+            clubPlaces = floor(int(club["points"]) / 3)
 
             # Test if everything is fine. If that's the case, book places.
             if (
                 placesRequired < 13
-                and placesRequired <= int(clubPoints)
+                and placesRequired <= clubPlaces
                 and placesRequired < int(competition["numberOfPlaces"])
             ):
                 competition["numberOfPlaces"] = (
                     int(competition["numberOfPlaces"]) - placesRequired
                 )
-                club["points"] = int(club["points"]) - placesRequired
+                club["points"] = int(club["points"]) - (placesRequired * 3)
                 flash(
                     f"Great-booking complete! you have booked {placesRequired} places for {competition['name']}"
                 )
@@ -94,7 +94,7 @@ def purchasePlaces():
                 flash("You can not book more than 12 points !")
 
             # Test if the user is trying to buy more places than his own count allow.
-            elif placesRequired > int(clubPoints):
+            elif placesRequired > clubPlaces:
                 flash("You can not book more places than your points count")
         else:
             flash("Please enter a valid number when booking places")
