@@ -102,9 +102,7 @@ def purchasePlaces():
     #  Display a message if the user is trying to book places for a past competition.
     else:
         flash("You can not book places for a competition in the past.")
-    return render_template(
-        "welcome.html", club=club, clubs=clubs, competitions=competitions
-    )
+    return render_template("welcome.html", club=club, competitions=competitions)
 
 
 @app.route("/displayboard")
