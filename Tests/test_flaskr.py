@@ -14,6 +14,7 @@ def test_loadClubs():
 def test_index_route():
     response = app.test_client().get("/")
     assert response.status_code == 200
+    assert b"Welcome to the GUDLFT Registration Portal!" in response.data
 
 
 def test_success_showSummary_route():
@@ -41,6 +42,20 @@ def test_fail_book():
     assert response.status_code == 500
 
 
+def test_fail_date_purchasePlaces():
+    places = 10
+    competitions = loadCompetitions()
+    clubs = loadClubs()
+    response = app.test_client().post(
+        "/purchasePlaces",
+        data=dict(
+            places=places, club=clubs[1]["name"], competition=competitions[0]["name"]
+        ),
+    )
+    assert response.status_code == 200
+    assert b"You can not book places for a competition in the past." in response.data
+
+
 def test_success_purchasePlaces():
     places = 10
     competitions = loadCompetitions()
@@ -58,7 +73,24 @@ def test_success_purchasePlaces():
     assert b"Great-booking complete!" in response.data
 
 
-def test_fail__excess_purchasePlaces():
+def test_fail_excesscomplaces_purchasePlaces():
+    places = 13
+    competitions = loadCompetitions()
+    clubs = loadClubs()
+    response = app.test_client().post(
+        "/purchasePlaces",
+        data=dict(
+            places=places, club=clubs[0]["name"], competition=competitions[3]["name"]
+        ),
+    )
+    assert response.status_code == 200
+    assert (
+        b"You can not book more places than available in the competition !"
+        in response.data
+    )
+
+
+def test_fail_excessmax_purchasePlaces():
     places = 13
     competitions = loadCompetitions()
     clubs = loadClubs()
@@ -86,22 +118,14 @@ def test_fail_excess_self_points_purchasePlaces():
     assert b"You can not book more places than your points count" in response.data
 
 
-def test_fail_purchasePlaces():
-    places = 10
-    competitions = loadCompetitions()
-    clubs = loadClubs()
-    response = app.test_client().post(
-        "/purchasePlaces",
-        data=dict(
-            places=places, club=clubs[1]["name"], competition=competitions[0]["name"]
-        ),
-    )
-    assert response.status_code == 200
-    assert b"You can not book places for a competition in the past." in response.data
-
-
 def test_displayboard():
     response = app.test_client().get("/displayboard")
     print(response.data)
     assert response.status_code == 200
     assert b"Point Display board :" in response.data
+
+
+def test_logout():
+    response = app.test_client().get("/logout")
+    assert response.status_code == 302
+    assert b"Redirecting..." in response.data
