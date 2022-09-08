@@ -6,7 +6,11 @@
 </head>
 <body>
     <h1>Welcome to the GUDLFT Registration Portal!</h1>
+    {%if error%}
+        {{error}}
+    {% else %}
     Please enter your secretary email to continue:
+    {%endif%}
     <form action="showSummary" method="post">
         <label for="email">Email:</label>
         <input type="email" name="email" id=""/>

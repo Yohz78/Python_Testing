@@ -1,25 +1,23 @@
-import os
-import tempfile
-
-import pytest
-
-from server import app, loadCompetitions, purchasePlaces, loadClubs
-from datetime import datetime
-import time
+from server import app, loadCompetitions, loadClubs
 
 
 def test_index_route():
     response = app.test_client().get("/")
-
     assert response.status_code == 200
 
 
-def test_showSummary_route():
+def test_success_showSummary_route():
     response = app.test_client().post(
         "/showSummary", data=dict(email="admin@irontemple.com")
     )
     assert response.status_code == 200
     assert b"Summary | GUDLFT Registration" in response.data
+
+
+def test_fail_showSummary_route():
+    response = app.test_client().post("/showSummary", data=dict(email="test@test.fr"))
+    assert response.status_code == 200
+    assert b"Unknown or invalid email." in response.data
 
 
 def test_book():
