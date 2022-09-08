@@ -34,7 +34,9 @@ def showSummary():
     error = None
     try:
         club = [club for club in clubs if club["email"] == request.form["email"]][0]
-        return render_template("welcome.html", club=club, competitions=competitions)
+        return render_template(
+            "welcome.html", club=club, clubs=clubs, competitions=competitions
+        )
     except:
         error = "Unknown or invalid email. Please enter a valid email adress : \n"
         return render_template("index.html", error=error)
@@ -62,19 +64,39 @@ def purchasePlaces():
     ]
     date_competition = competition["date"]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
+
+    # Test if the competition is in the future
     if date_competition > now:
         placesRequired = int(request.form["places"])
         clubPoints = club["points"]
-        if placesRequired < 13 and placesRequired <= int(clubPoints):
+
+        # Test if everything is fine. If that's the case, book places.
+        if (
+            placesRequired < 13
+            and placesRequired <= int(clubPoints)
+            and placesRequired < int(competition["numberOfPlaces"])
+        ):
             competition["numberOfPlaces"] = (
                 int(competition["numberOfPlaces"]) - placesRequired
             )
             club["points"] = int(club["points"]) - placesRequired
-            flash("Great-booking complete!")
+            flash(
+                f"Great-booking complete! you have booked {placesRequired} places for {competition['name']}"
+            )
+
+        # Test if the user try to book more places than available in the competition.
+        elif placesRequired > int(competition["numberOfPlaces"]):
+            flash("You can not book more places than available in the competition !")
+
+        # Test if the user is trying to book more than 12 places which is not allowed.
         elif placesRequired > 12:
             flash("You can not book more than 12 points !")
+
+        # Test if the user is trying to buy more places than his own count allow.
         elif placesRequired > int(clubPoints):
             flash("You can not book more places than your points count")
+
+    #  Display a message if the user is trying to book places for a past competition.
     else:
         placesRequired = int(request.form["places"])
         flash("You can not book places for a competition in the past.")
