@@ -50,9 +50,6 @@ def book(competition, club):
         return render_template(
             "booking.html", club=foundClub, competition=foundCompetition
         )
-    else:
-        flash("Something went wrong-please try again")
-        return render_template("welcome.html", club=club, competitions=competitions)
 
 
 @app.route("/purchasePlaces", methods=["POST"])
@@ -67,43 +64,52 @@ def purchasePlaces():
 
     # Test if the competition is in the future
     if date_competition > now:
-        placesRequired = int(request.form["places"])
-        clubPoints = club["points"]
+        # Check that a number has been entered for places.
+        if request.form["places"]:
+            placesRequired = int(request.form["places"])
+            clubPoints = club["points"]
 
-        # Test if everything is fine. If that's the case, book places.
-        if (
-            placesRequired < 13
-            and placesRequired <= int(clubPoints)
-            and placesRequired < int(competition["numberOfPlaces"])
-        ):
-            competition["numberOfPlaces"] = (
-                int(competition["numberOfPlaces"]) - placesRequired
-            )
-            club["points"] = int(club["points"]) - placesRequired
-            flash(
-                f"Great-booking complete! you have booked {placesRequired} places for {competition['name']}"
-            )
+            # Test if everything is fine. If that's the case, book places.
+            if (
+                placesRequired < 13
+                and placesRequired <= int(clubPoints)
+                and placesRequired < int(competition["numberOfPlaces"])
+            ):
+                competition["numberOfPlaces"] = (
+                    int(competition["numberOfPlaces"]) - placesRequired
+                )
+                club["points"] = int(club["points"]) - placesRequired
+                flash(
+                    f"Great-booking complete! you have booked {placesRequired} places for {competition['name']}"
+                )
 
-        # Test if the user try to book more places than available in the competition.
-        elif placesRequired > int(competition["numberOfPlaces"]):
-            flash("You can not book more places than available in the competition !")
+            # Test if the user try to book more places than available in the competition.
+            elif placesRequired > int(competition["numberOfPlaces"]):
+                flash(
+                    "You can not book more places than available in the competition !"
+                )
 
-        # Test if the user is trying to book more than 12 places which is not allowed.
-        elif placesRequired > 12:
-            flash("You can not book more than 12 points !")
+            # Test if the user is trying to book more than 12 places which is not allowed.
+            elif placesRequired > 12:
+                flash("You can not book more than 12 points !")
 
-        # Test if the user is trying to buy more places than his own count allow.
-        elif placesRequired > int(clubPoints):
-            flash("You can not book more places than your points count")
+            # Test if the user is trying to buy more places than his own count allow.
+            elif placesRequired > int(clubPoints):
+                flash("You can not book more places than your points count")
+        else:
+            flash("Please enter a valid number when booking places")
 
     #  Display a message if the user is trying to book places for a past competition.
     else:
-        placesRequired = int(request.form["places"])
         flash("You can not book places for a competition in the past.")
-    return render_template("welcome.html", club=club, competitions=competitions)
+    return render_template(
+        "welcome.html", club=club, clubs=clubs, competitions=competitions
+    )
 
 
-# TODO: Add route for points display
+@app.route("/displayboard")
+def displayboard():
+    return render_template("displayboard.html", clubs=clubs)
 
 
 @app.route("/logout")

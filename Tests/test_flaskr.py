@@ -1,6 +1,16 @@
 from server import app, loadCompetitions, loadClubs
 
 
+def test_loadCompetitions():
+    competitions = loadCompetitions()
+    assert competitions[0]["name"] == "Spring Festival"
+
+
+def test_loadClubs():
+    clubs = loadClubs()
+    assert clubs[0]["name"] == "Simply Lift"
+
+
 def test_index_route():
     response = app.test_client().get("/")
     assert response.status_code == 200
@@ -26,14 +36,9 @@ def test_book():
     assert b"Spring Festival" in response.data
 
 
-def test_loadCompetitions():
-    competitions = loadCompetitions()
-    assert competitions[0]["name"] == "Spring Festival"
-
-
-def test_loadClubs():
-    clubs = loadClubs()
-    assert clubs[0]["name"] == "Simply Lift"
+def test_fail_book():
+    response = app.test_client().get("/book/NotAClub/Iron%20Temple")
+    assert response.status_code == 500
 
 
 def test_success_purchasePlaces():
@@ -46,8 +51,9 @@ def test_success_purchasePlaces():
             places=places, club=clubs[0]["name"], competition=competitions[2]["name"]
         ),
     )
+    print(response.data)
     assert response.status_code == 200
-    assert b"Points available: 3" in response.data
+    assert b"Simply Lift, has 3 points available" in response.data
     assert b"Number of Places: 15" in response.data
     assert b"Great-booking complete!" in response.data
 
@@ -62,7 +68,6 @@ def test_fail__excess_purchasePlaces():
             places=places, club=clubs[0]["name"], competition=competitions[2]["name"]
         ),
     )
-    print(response.data)
     assert response.status_code == 200
     assert b"You can not book more than 12 points !" in response.data
 
@@ -93,3 +98,10 @@ def test_fail_purchasePlaces():
     )
     assert response.status_code == 200
     assert b"You can not book places for a competition in the past." in response.data
+
+
+def test_displayboard():
+    response = app.test_client().get("/displayboard")
+    print(response.data)
+    assert response.status_code == 200
+    assert b"Point Display board :" in response.data
