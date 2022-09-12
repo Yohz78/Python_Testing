@@ -61,13 +61,13 @@ def purchasePlaces():
     ]
     date_competition = competition["date"]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
+    clubPlaces = floor(int(club["points"]) / 3)
+    placesRequired = int(request.form["places"])
 
     # Test if the competition is in the future
     if date_competition > now:
         # Check that a number has been entered for places.
-        if request.form["places"]:
-            placesRequired = int(request.form["places"])
-            clubPlaces = floor(int(club["points"]) / 3)
+        if placesRequired:
 
             # Test if everything is fine. If that's the case, book places.
             if (
