@@ -5,12 +5,14 @@ from math import floor
 
 
 def loadClubs():
+    """Imports clubs from the database."""
     with open("clubs.json") as c:
         listOfClubs = json.load(c)["clubs"]
         return listOfClubs
 
 
 def loadCompetitions():
+    """Imports competitions from the database."""
     with open("competitions.json") as comps:
         listOfCompetitions = json.load(comps)["competitions"]
         return listOfCompetitions
@@ -25,12 +27,14 @@ clubs = loadClubs()
 
 @app.route("/")
 def index():
+    """Access index route."""
     error = None
     return render_template("index.html", error=error)
 
 
 @app.route("/showSummary", methods=["POST"])
 def showSummary():
+    """Log in to the app if the email is the correct. Else, redirect to index.html."""
     error = None
     try:
         club = [club for club in clubs if club["email"] == request.form["email"]][0]
@@ -44,6 +48,9 @@ def showSummary():
 
 @app.route("/book/<competition>/<club>")
 def book(competition, club):
+    """
+    Open the booking page for a given club and a given competition.
+    """
     foundClub = [c for c in clubs if c["name"] == club][0]
     foundCompetition = [c for c in competitions if c["name"] == competition][0]
     if foundClub and foundCompetition:
@@ -54,6 +61,7 @@ def book(competition, club):
 
 @app.route("/purchasePlaces", methods=["POST"])
 def purchasePlaces():
+    """Check multiple requirements and purchase places if they are met."""
     date_now = datetime.now()
     now = date_now.strftime("%Y-%m-%d %H:%M:%S")
     competition = [c for c in competitions if c["name"] == request.form["competition"]][
@@ -61,13 +69,13 @@ def purchasePlaces():
     ]
     date_competition = competition["date"]
     club = [c for c in clubs if c["name"] == request.form["club"]][0]
+    clubPlaces = floor(int(club["points"]) / 3)
+    placesRequired = int(request.form["places"])
 
     # Test if the competition is in the future
     if date_competition > now:
         # Check that a number has been entered for places.
-        if request.form["places"]:
-            placesRequired = int(request.form["places"])
-            clubPlaces = floor(int(club["points"]) / 3)
+        if placesRequired:
 
             # Test if everything is fine. If that's the case, book places.
             if (
@@ -107,9 +115,11 @@ def purchasePlaces():
 
 @app.route("/displayboard")
 def displayboard():
+    """Show the display board."""
     return render_template("displayboard.html", clubs=clubs)
 
 
 @app.route("/logout")
 def logout():
+    """Logout from the app."""
     return redirect(url_for("index"))
